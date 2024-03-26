@@ -197,7 +197,7 @@ animations = [{
 "duration": 1.0,
 "texture": ExtResource("36_puxiv")
 }],
-"loop": false,
+"loop": true,
 "name": &"Jump",
 "speed": 24.0
 }, {
@@ -315,5 +315,5 @@ texture_filter = 1
 position = Vector2(0, -30)
 scale = Vector2(0.1, 0.1)
 sprite_frames = SubResource("SpriteFrames_txfsx")
-animation = &"Idle"
+animation = &"JumpStart"
 autoplay = "Idle"

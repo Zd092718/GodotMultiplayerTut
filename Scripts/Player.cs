@@ -8,11 +8,14 @@ public partial class Player : CharacterBody2D
     [Export] public float moveSpeed = 300;
     [Export] public float gravity = 30;
     [Export] public float jumpStrength = 600;
+    [Export] public int maxJumps = 1;
 
     public Vector2 initialSpriteScale;
+    int jumpCount = 0;
     public override void _Ready()
     {
         initialSpriteScale = animSprite.Scale;
+        animSprite.AnimationFinished += HandleAnimationFinished;
     }
     public override void _PhysicsProcess(double delta)
     {
@@ -27,13 +30,29 @@ public partial class Player : CharacterBody2D
 
         bool isFalling = Velocity.Y > 0.0 && !IsOnFloor();
         bool isJumping = Input.IsActionJustPressed(GameConstants.INPUT_JUMP) && IsOnFloor();
+        bool isDoubleJumping = Input.IsActionJustPressed(GameConstants.INPUT_JUMP) && isFalling;
         bool isJumpCancelled = Input.IsActionJustReleased(GameConstants.INPUT_JUMP) && Velocity.Y < 0;
         bool isIdle = IsOnFloor() && Mathf.IsZeroApprox(Velocity.X);
-        bool isWalking = IsOnFloor() && !Mathf.IsZeroApprox(Velocity.X); 
+        bool isWalking = IsOnFloor() && !Mathf.IsZeroApprox(Velocity.X);
         
         if (isJumping)
         {
+            jumpCount++;
             newVel.Y = -jumpStrength;
+        } else if (isDoubleJumping)
+        {
+            jumpCount++;
+            if (jumpCount <= maxJumps)
+            {
+                newVel.Y = -jumpStrength;
+            }
+        }
+        else if(isJumpCancelled)
+        {
+            newVel.Y = 0;
+        } else if (IsOnFloor())
+        {
+            jumpCount = 0;
         }
         
         Velocity = newVel;
@@ -44,6 +63,9 @@ public partial class Player : CharacterBody2D
         if (isJumping)
         {
             animSprite.Play(GameConstants.ANIM_JUMP_START);
+        } else if (isDoubleJumping)
+        {
+            animSprite.Play(GameConstants.ANIM_DOUBLE_JUMP_START);
         } else if (isWalking)
         {
             animSprite.Play(GameConstants.ANIM_WALK);
@@ -67,5 +89,10 @@ public partial class Player : CharacterBody2D
             }
         }
         
+    }
+    
+    private void HandleAnimationFinished()
+    {
+        animSprite.Play(GameConstants.INPUT_JUMP);
     }
 }
